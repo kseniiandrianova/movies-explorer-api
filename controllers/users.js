@@ -10,7 +10,7 @@ const BadRequestError = require('../errors/BadRequestError');
 module.exports.getUsers = (req, res, next) => {
   users.find({})
     .then((items) => {
-      res.status(200).send({ data: items });
+      res.send({ data: items });
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
@@ -18,8 +18,9 @@ module.exports.getUsers = (req, res, next) => {
       }
       if (err.kind === 'ObjectId') {
         next(new BadRequestError('Переданы некорректный данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 module.exports.getUser = (req, res, next) => {
@@ -29,7 +30,7 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Нет пользователя с таким id');
       }
-      res.status(200).send(user);
+      res.send(user);
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
@@ -37,23 +38,24 @@ module.exports.getUser = (req, res, next) => {
       }
       if (err.kind === 'ObjectId') {
         next(new BadRequestError('Переданы некорректный данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
 module.exports.getUserId = (req, res, next) => {
   users.findById(req.params.id)
-    .orFail(new Error('NotValidId'))
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.message === 'NotValidId') {
         next(new NotFoundError('Нет пользователя с таким id'));
       }
       if (err.kind === 'ObjectId') {
         next(new BadRequestError('Переданы некорректный данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -69,7 +71,7 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((user) => res.status(200).send({
+      .then((user) => res.send({
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -79,8 +81,9 @@ module.exports.createUser = (req, res, next) => {
           next(new BadRequestError('Переданы некорректный данные'));
         } else if (err.name === 'MongoError' && err.code === 11000) {
           next(new ConflictError('Пользователь с таким email уже существует!'));
+        } else {
+          next(err);
         }
-        next(err);
       });
   });
 };
@@ -89,15 +92,15 @@ module.exports.updateProfile = (req, res, next) => {
   const { name, email } = req.body;
   const owner = req.user._id;
   users.findByIdAndUpdate(owner, { name, email }, { runValidators: true, new: true })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.message === 'NotValidId') {
-        next(new NotFoundError('Нет пользователя с таким id'));
-      }
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректный данные'));
+      } else if (err.name === 'MongoError' && err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует!'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 

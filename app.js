@@ -4,13 +4,11 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
-const { errors, celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-
-const routerUsers = require('./routes/users');
-const routerMovies = require('./routes/movies');
-const { login, createUser, logout } = require('./controllers/users');
+const { limiter } = require('./middlewares/limiter');
+const router = require('./routes/index');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -19,7 +17,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(limiter);
 app.use(cookieParser());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,28 +43,7 @@ const options = {
 };
 app.use('*', cors(options));
 
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().min(8).required(),
-  }),
-}), login);
-
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    email: Joi.string().required().email(),
-    password: Joi.string().min(8).required(),
-  }),
-}), createUser);
-
-app.delete('/singout', logout);
-
 app.use(auth);
-
-app.use(routerUsers);
-app.use(routerMovies);
-app.use(errorLogger);
 
 app.get('/crash-test', () => {
   setTimeout(() => {
@@ -74,10 +51,14 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
+app.use(router);
+
 app.use('*', (req, res, next) => {
   const err = new NotFoundError('Запрашиваемый ресурс не найден');
   next(err);
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 

@@ -42,28 +42,30 @@ module.exports.createMovie = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректный данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
 module.exports.deleteMovie = (req, res, next) => {
   movies.findById({ _id: req.params.movieId })
-    .orFail(new Error('NotValidId'))
     .then((movie) => {
       if (req.user._id.toString() === movie.owner.toString()) {
-        movie.remove();
-        res.status(200).send({ message: 'Карточка удалена' });
+        return movie.remove().then(() => {
+          res.send({ message: 'Фильм удален' });
+        });
       }
-      throw new ForbiddenError('Нельзя удалять чужую карточку');
+      throw new ForbiddenError('Нельзя удалять чужой фильм');
     })
     .catch((err) => {
       if (err.message === 'NotValidId') {
-        next(new NotFoundError('Карточка с указанным _id не найдена'));
+        next(new NotFoundError('Фильм с указанным _id не найдена'));
       }
       if (err.kind === 'ObjectId') {
         next(new BadRequestError('Невалидный id'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
