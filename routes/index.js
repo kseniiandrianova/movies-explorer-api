@@ -21,8 +21,8 @@ router.post('/signup', celebrate({
 }), createUser);
 
 router.delete('/singout', logout);
-router.use(auth);
-router.use(routerUsers);
-router.use(routerMovies);
+
+router.use('/users', auth, routerUsers);
+router.use('/movies', auth, routerMovies);
 
 module.exports = router;
