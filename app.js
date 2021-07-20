@@ -34,6 +34,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 const options = {
   origin: [
     'http://localhost:3000',
+    'https://movies-api.nomoredomains.monster/api',
+    'https://movies-api.nomoredomains.monster',
   ],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
