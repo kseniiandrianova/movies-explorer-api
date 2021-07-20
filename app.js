@@ -17,6 +17,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(cookieParser());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,14 +46,13 @@ const options = {
 app.use('*', cors(options));
 
 app.use(auth);
+app.use(router);
 
 app.get('/crash-test', () => {
   setTimeout(() => {
     throw new Error('Сервер сейчас упадёт');
   }, 0);
 });
-
-app.use(router);
 
 app.use('*', (req, res, next) => {
   const err = new NotFoundError('Запрашиваемый ресурс не найден');
