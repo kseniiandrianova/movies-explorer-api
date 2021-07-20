@@ -72,4 +72,4 @@ app.use((err, req, res, next) => {
 
 app.disable('x-powered-by');
 
-app.listen(PORT, ({ message: 'Сервер запущен' }));
+app.listen(PORT);
