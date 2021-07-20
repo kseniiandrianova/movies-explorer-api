@@ -22,7 +22,7 @@ router.post('/signup', celebrate({
 
 router.delete('/singout', logout);
 
-router.use('/users', auth, routerUsers);
-router.use('/movies', auth, routerMovies);
+router.use(auth, routerUsers);
+router.use(auth, routerMovies);
 
 module.exports = router;

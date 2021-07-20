@@ -35,6 +35,7 @@ const options = {
   origin: [
     'http://localhost:3000',
     'https://api.kseniia-diplom.nomoredomains.club/api',
+    'https://api.kseniia-diplom.nomoredomains.club',
   ],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   preflightContinue: false,
