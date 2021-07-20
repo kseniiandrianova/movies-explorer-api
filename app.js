@@ -9,21 +9,11 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const { limiter } = require('./middlewares/limiter');
 const router = require('./routes/index');
-const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/NotFoundError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 const app = express();
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(cookieParser());
-app.use(helmet());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(requestLogger);
-app.use(limiter);
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -31,6 +21,15 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
   useUnifiedTopology: true,
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(requestLogger);
+app.use(limiter);
+app.use(helmet());
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 const options = {
   origin: [
@@ -45,7 +44,6 @@ const options = {
 };
 app.use('*', cors(options));
 
-app.use(auth);
 app.use(router);
 
 app.get('/crash-test', () => {

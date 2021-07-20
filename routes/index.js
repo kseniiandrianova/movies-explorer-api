@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const routerUsers = require('./users');
 const routerMovies = require('./movies');
+const auth = require('../middlewares/auth');
 const { login, createUser, logout } = require('../controllers/users');
 
 router.post('/signin', celebrate({
@@ -20,7 +21,7 @@ router.post('/signup', celebrate({
 }), createUser);
 
 router.delete('/singout', logout);
-
+router.use(auth);
 router.use(routerUsers);
 router.use(routerMovies);
 
