@@ -30,7 +30,6 @@ module.exports.getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Нет пользователя с таким id');
       }
-      res.setHeader('Access-Control-Allow-Origin', '*');
       res.send(user);
     })
     .catch((err) => {
@@ -109,19 +108,13 @@ module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return users.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-        { expiresIn: '7d' },
-      );
-      res.send({ token, message: 'Вы успешно вошли' });
+      res.send({
+        token: jwt.sign({ _id: user._id },
+          NODE_ENV === 'production' ? JWT_SECRET : 'secret-key',
+          { expiresIn: '7d' }),
+        message: 'Вы успешно вошли',
+      });
+      next();
     })
     .catch(next);
 };
-
-// module.exports.logout = (req, res) => {
-//   res.clearCookie('jwt', {
-//     httpOnly: true,
-//     sameSite: true,
-//   }).send({ message: 'Вы успешно вышли' });
-// };

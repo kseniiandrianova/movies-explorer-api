@@ -6,17 +6,13 @@ const extractBearerToken = (header) => header.replace('Bearer ', '');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
-  // const token = req.cookies.jwt;
   if (!authorization) {
     throw new AuthError('Необходима авторизация!');
   }
   const token = extractBearerToken(authorization);
   let payload;
   try {
-    payload = jwt.verify(
-      token,
-      NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-    );
+    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'secret-key');
   } catch (err) {
     throw new AuthError('Необходима авторизация!!');
   }
